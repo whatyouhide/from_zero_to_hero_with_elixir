@@ -1,59 +1,48 @@
 defmodule Chat.Client do
-  def gets_loop(nickname) do
-    message = String.trim(IO.gets("#{nickname}: "))
-    message = %{"kind" => "broadcast", "message" => message, "nickname" => nickname}
-    send(Process.whereis(:client), {:send_to_server, message})
-    gets_loop(nickname)
-  end
+  import IO.ANSI
 
   def start() do
-    {address, port} =
-      case String.trim(IO.gets("Server address as address:port (defaults to localhost:4000): ")) do
-        "" ->
-          {'localhost', 4000}
-
-        other ->
-          [address, port] = String.split(other, ":", parts: 2)
-          {String.to_charlist(address), String.to_integer(port)}
-      end
-
-    parent = self()
-    loop_pid = spawn_link(fn -> process_loop(parent, address, port) end)
-
-    receive do
-      {:ready, ^loop_pid} -> :ok
-    end
-
-    Process.register(loop_pid, :client)
-
-    nickname = String.trim(IO.gets("Nickname: "))
-    gets_loop(nickname)
-  end
-
-  defp process_loop(parent, address, port) do
+    {address, port} = get_address_and_port()
     {:ok, socket} = :gen_tcp.connect(address, port, [:binary, packet: 2, active: true])
-    send(parent, {:ready, self()})
-    process_loop(socket)
+    nickname = gets("Nickname: ")
+    IO.puts("Welcome, #{nickname}!")
+
+    gets_pid = spawn_gets_process(self(), nickname)
+    IO.write("#{nickname}: ")
+
+    loop(socket, nickname, gets_pid)
   end
 
-  defp process_loop(socket) do
+  defp spawn_gets_process(parent, nickname) do
+    spawn(fn ->
+      message = gets("")
+      send(parent, {:gets, message})
+    end)
+  end
+
+  defp loop(socket, nickname, gets_pid) do
     receive do
-      {:send_to_server, message} ->
-        payload = Jason.encode!(message)
+      {:gets, message} ->
+        payload =
+          Jason.encode!(%{"kind" => "broadcast", "nickname" => nickname, "message" => message})
+
         :ok = :gen_tcp.send(socket, payload)
-        process_loop(socket)
+        IO.write("#{nickname}: ")
+        gets_pid = spawn_gets_process(self(), nickname)
+        loop(socket, nickname, gets_pid)
 
       {:tcp, ^socket, data} ->
-        case Jason.decode(data) do
-          {:ok,
-           %{"kind" => "broadcast", "nickname" => broadcaster_nickname, "message" => message}} ->
-            IO.puts("#{broadcaster_nickname}: #{message}")
+        %{"kind" => "broadcast", "nickname" => broadcaster_nickname, "message" => message} =
+          Jason.decode!(data)
 
-          {:error, reason} ->
-            IO.puts("ERROR: error decoding JSON: #{inspect(reason)}")
-        end
+        kill_and_wait(gets_pid)
 
-        process_loop(socket)
+        IO.puts([cursor_left(1000), clear_line(), "#{broadcaster_nickname}: #{message}"])
+        IO.write("#{nickname}: ")
+
+        gets_pid = spawn_gets_process(self(), nickname)
+
+        loop(socket, nickname, gets_pid)
 
       {:tcp_closed, ^socket} ->
         raise "TCP connection was closed"
@@ -61,6 +50,30 @@ defmodule Chat.Client do
       {:tcp_error, ^socket, reason} ->
         raise "TCP connection error: #{:inet.format_error(reason)}"
     end
+  end
+
+  defp kill_and_wait(pid) do
+    ref = Process.monitor(pid)
+    Process.exit(pid, :kill)
+
+    receive do
+      {:DOWN, ^ref, _, _, _} -> :ok
+    end
+  end
+
+  defp get_address_and_port() do
+    case gets("Server address as address:port (defaults to localhost:4000): ") do
+      "" ->
+        {'localhost', 4000}
+
+      other ->
+        [address, port] = String.split(other, ":", parts: 2)
+        {String.to_charlist(address), String.to_integer(port)}
+    end
+  end
+
+  defp gets(prompt) do
+    prompt |> IO.gets() |> String.trim()
   end
 end
 
