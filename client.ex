@@ -3,7 +3,7 @@ defmodule Chat.Client do
 
   def start() do
     {address, port} = get_address_and_port()
-    {:ok, socket} = :gen_tcp.connect(address, port, [:binary, packet: 2, active: true])
+    {:ok, socket} = :gen_tcp.connect(address, port, [:binary, active: true])
     nickname = gets("Nickname: ")
 
     gets_pid = spawn_gets_process(self())
@@ -26,12 +26,14 @@ defmodule Chat.Client do
         payload =
           Jason.encode!(%{"kind" => "broadcast", "nickname" => nickname, "message" => message})
 
-        :ok = :gen_tcp.send(socket, payload)
+        :ok = :gen_tcp.send(socket, encode_packet(payload))
         write_prompt(nickname)
         gets_pid = spawn_gets_process(self())
         loop(socket, nickname, gets_pid)
 
       {:tcp, ^socket, data} ->
+        data = decode_packet(data)
+
         %{"kind" => "broadcast", "nickname" => broadcaster_nickname, "message" => message} =
           Jason.decode!(data)
 
@@ -52,6 +54,14 @@ defmodule Chat.Client do
       {:tcp_error, ^socket, reason} ->
         raise "TCP connection error: #{:inet.format_error(reason)}"
     end
+  end
+
+  defp decode_packet(<<size::16-integer-unsigned-big, data::binary-size(size)>>) do
+    data
+  end
+
+  defp encode_packet(data) do
+    <<byte_size(data)::16-integer-unsigned-big, data::binary>>
   end
 
   defp kill_and_wait(pid) do
