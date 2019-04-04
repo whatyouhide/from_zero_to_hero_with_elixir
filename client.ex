@@ -5,7 +5,6 @@ defmodule Chat.Client do
     {address, port} = get_address_and_port()
     {:ok, socket} = :gen_tcp.connect(address, port, [:binary, packet: 2, active: true])
     nickname = gets("Nickname: ")
-    IO.puts("Welcome, #{nickname}!\n")
 
     gets_pid = spawn_gets_process(self())
     write_prompt(nickname)
