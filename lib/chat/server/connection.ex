@@ -43,11 +43,13 @@ defmodule Chat.Server.Connection do
 
   def handle_info({:tcp_closed, socket}, %{socket: socket} = state) do
     Logger.info("Stopping connection because the TCP socket was closed")
+    Chat.Server.Data.unregister()
     {:stop, :normal, %{state | socket: nil}}
   end
 
   def handle_info({:tcp_error, socket, reason}, %{socket: socket} = state) do
     Logger.info("Stopping connection because of a TCP error: #{:inet.format_error(reason)}")
+    Chat.Server.Data.unregister()
     {:stop, :normal, %{state | socket: nil}}
   end
 
