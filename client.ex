@@ -38,20 +38,12 @@ defmodule Chat.Client do
         loop(socket, nickname, gets_pid)
 
       {:tcp, ^socket, data} ->
-        data = decode_packet(data)
+        message =
+          data
+          |> decode_packet()
+          |> Jason.decode!()
 
-        %{"kind" => "broadcast", "nickname" => broadcaster_nickname, "message" => message} =
-          Jason.decode!(data)
-
-        kill_and_wait(gets_pid)
-
-        IO.write([cursor_left(1000), clear_line()])
-        write_message(broadcaster_nickname, message)
-
-        write_prompt(nickname)
-
-        gets_pid = spawn_gets_process(self())
-
+        gets_pid = handle_server_message(gets_pid, nickname, message)
         loop(socket, nickname, gets_pid)
 
       {:tcp_closed, ^socket} ->
@@ -60,6 +52,32 @@ defmodule Chat.Client do
       {:tcp_error, ^socket, reason} ->
         raise "TCP connection error: #{:inet.format_error(reason)}"
     end
+  end
+
+  defp handle_server_message(gets_pid, nickname, %{"kind" => "broadcast"} = payload) do
+    %{"nickname" => broadcaster_nickname, "message" => message} = payload
+
+    kill_and_wait(gets_pid)
+
+    IO.write([cursor_left(1000), clear_line()])
+    write_message(broadcaster_nickname, message)
+
+    write_prompt(nickname)
+
+    spawn_gets_process(self())
+  end
+
+  defp handle_server_message(gets_pid, nickname, %{"kind" => "welcome"} = payload) do
+    %{"users_online" => users_online} = payload
+
+    kill_and_wait(gets_pid)
+
+    IO.write([cursor_left(1000), clear_line()])
+    write_message("~SERVER~", "Welcome #{nickname}! There are #{users_online} users online.")
+
+    write_prompt(nickname)
+
+    spawn_gets_process(self())
   end
 
   defp decode_packet(<<size::16-integer-unsigned-big, data::binary-size(size)>>) do

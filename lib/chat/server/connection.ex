@@ -19,7 +19,16 @@ defmodule Chat.Server.Connection do
     Chat.Server.Data.register()
     :ok = :inet.setopts(socket, active: :once)
 
-    {:ok, %__MODULE__{socket: socket}}
+    {:ok, %__MODULE__{socket: socket}, {:continue, :send_welcome_message}}
+  end
+
+  @impl true
+  def handle_continue(:send_welcome_message, state) do
+    users_online = Chat.Server.Data.get_all_connections() |> MapSet.size()
+    payload = %{"kind" => "welcome", "users_online" => users_online}
+    :ok = :gen_tcp.send(state.socket, Jason.encode!(payload))
+
+    {:noreply, state}
   end
 
   @impl true
