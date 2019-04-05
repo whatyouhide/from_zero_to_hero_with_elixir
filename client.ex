@@ -23,6 +23,12 @@ defmodule Chat.Client do
   defp loop(socket, nickname, gets_pid) do
     receive do
       {:gets, message} ->
+        message =
+          case message do
+            <<message::bytes-size(100), _::binary>> -> message
+            other -> other
+          end
+
         payload =
           Jason.encode!(%{"kind" => "broadcast", "nickname" => nickname, "message" => message})
 
