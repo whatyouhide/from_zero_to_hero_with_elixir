@@ -54,6 +54,11 @@ defmodule Chat.Client do
     end
   end
 
+  # Maps with atom keys
+  # case :erlang.binary_to_term(term) do
+  #   {:broadcast, nickname, message} when is_binary(nickname) and is_binary(message)
+  # end
+
   defp handle_server_message(gets_pid, nickname, %{"kind" => "broadcast"} = payload) do
     %{"nickname" => broadcaster_nickname, "message" => message} = payload
 
