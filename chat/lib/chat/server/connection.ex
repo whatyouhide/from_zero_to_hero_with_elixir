@@ -25,16 +25,15 @@ defmodule Chat.Server.Connection do
   @impl true
   def handle_continue(:send_welcome_message, state) do
     users_online = Chat.Server.Data.get_all_connections() |> MapSet.size()
-    payload = %{"kind" => "welcome", "users_online" => users_online}
-    :ok = :gen_tcp.send(state.socket, Jason.encode!(payload))
+    payload = %{kind: :welcome, users_online: users_online}
+    :ok = :gen_tcp.send(state.socket, :erlang.term_to_binary(payload))
 
     {:noreply, state}
   end
 
   @impl true
   def handle_cast({:send_to_client, message}, state) do
-    payload = Jason.encode_to_iodata!(message)
-    :ok = :gen_tcp.send(state.socket, payload)
+    :ok = :gen_tcp.send(state.socket, :erlang.term_to_binary(message))
     {:noreply, state}
   end
 
@@ -62,16 +61,18 @@ defmodule Chat.Server.Connection do
   ## Helpers
 
   defp handle_data(data) do
-    case Jason.decode(data) do
-      {:ok, %{"kind" => "broadcast"} = message} ->
+    try do
+      :erlang.binary_to_term(data, [:safe])
+    catch
+      _, _ ->
+        Logger.error("Malformed message from client")
+    else
+      %{kind: :broadcast, nickname: _, message: _} = message ->
         connections = Chat.Server.Data.get_all_connections()
         Enum.each(connections, &Chat.Server.Connection.send_to_client(&1, message))
 
-      {:ok, other} ->
+      other ->
         Logger.error("Unknown message from client: #{inspect(other)}")
-
-      {:error, reason} ->
-        Logger.error("Error when decoding JSON: #{inspect(reason)}")
     end
   end
 end
