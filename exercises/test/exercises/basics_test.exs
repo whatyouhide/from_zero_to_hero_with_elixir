@@ -27,12 +27,4 @@ defmodule Exercises.BasicsTest do
     assert Basics.min([2, 1, 3]) == 1
     assert Basics.min([1, -1, 0]) == -1
   end
-
-  @tag :skip
-  test "average/1" do
-    assert Basics.average([5]) == 5
-    assert Basics.average([5, 5]) == 5
-    assert Basics.average([5, 6, 7]) == 6
-    assert Basics.average([]) == nil
-  end
 end

@@ -3,6 +3,13 @@ defmodule Exercises.AdvancedTest do
   alias Exercises.Advanced
 
   @tag :skip
+  test "average/1" do
+    assert Advanced.average([5]) == 5
+    assert Advanced.average([5, 5]) == 5
+    assert Advanced.average([5, 6, 7]) == 6
+  end
+
+  @tag :skip
   test "odds_and_evens/1" do
     assert Advanced.odds_and_evens([]) == {[], []}
     assert Advanced.odds_and_evens([1, 3, 5]) == {[1, 3, 5], []}
