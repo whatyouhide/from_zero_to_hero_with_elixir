@@ -16,7 +16,8 @@ defmodule Chat.Server do
     case :gen_tcp.listen(port, [:binary, packet: 2]) do
       {:ok, listen_socket} ->
         Logger.debug("Listening on port #{port}")
-        {:ok, listen_socket, {:continue, :accept}}
+        send(self(), :accept)
+        {:ok, listen_socket}
 
       {:error, reason} ->
         Logger.error("Couldn't start listen socket: #{:inet.format_error(reason)}")
@@ -25,7 +26,7 @@ defmodule Chat.Server do
   end
 
   @impl true
-  def handle_continue(:accept, listen_socket) do
+  def handle_info(:accept, listen_socket) do
     Logger.debug("Accepting connections")
 
     case :gen_tcp.accept(listen_socket) do
@@ -39,7 +40,8 @@ defmodule Chat.Server do
           )
 
         :ok = :gen_tcp.controlling_process(socket, pid)
-        {:noreply, listen_socket, {:continue, :accept}}
+        send(self(), :accept)
+        {:noreply, listen_socket}
 
       {:error, reason} ->
         Logger.error("Couldn't accept new connections: #{:inet.format_error(reason)}")
