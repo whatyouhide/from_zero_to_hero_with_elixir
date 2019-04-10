@@ -4,7 +4,7 @@ defmodule Chat.Client do
   def start() do
     {address, port} = get_address_and_port()
     {:ok, socket} = :gen_tcp.connect(address, port, [:binary, active: true])
-    nickname = gets("Nickname: ")
+    nickname = IO.gets("Nickname: ") |> String.trim()
 
     gets_pid = spawn_gets_process(self())
     write_prompt(nickname)
@@ -14,7 +14,7 @@ defmodule Chat.Client do
 
   defp spawn_gets_process(parent) do
     spawn(fn ->
-      message = gets("")
+      message = IO.gets("") |> String.trim()
       IO.write([cursor_up(), cursor_left(1000), clear_line()])
       send(parent, {:gets, message})
     end)
@@ -54,7 +54,7 @@ defmodule Chat.Client do
 
     kill_and_wait(gets_pid)
 
-    IO.write([cursor_left(1000), clear_line()])
+    clear_line_from_beginning()
     write_message(broadcaster_nickname, message)
 
     write_prompt(nickname)
@@ -67,7 +67,7 @@ defmodule Chat.Client do
 
     kill_and_wait(gets_pid)
 
-    IO.write([cursor_left(1000), clear_line()])
+    clear_line_from_beginning()
     write_message("~SERVER~", "Welcome #{nickname}! There are #{users_online} users online.")
 
     write_prompt(nickname)
@@ -94,7 +94,9 @@ defmodule Chat.Client do
   end
 
   defp get_address_and_port() do
-    case gets("Server address as address:port (defaults to localhost:4000): ") do
+    input = IO.gets("Server address as address:port (defaults to localhost:4000): ")
+
+    case String.trim(input) do
       "" ->
         {'localhost', 4000}
 
@@ -112,8 +114,8 @@ defmodule Chat.Client do
     IO.write([light_green(), nickname, ": ", reset(), faint(), message, reset(), ?\n])
   end
 
-  defp gets(prompt) do
-    prompt |> IO.gets() |> String.trim()
+  defp clear_line_from_beginning() do
+    IO.write([cursor_left(1000), clear_line()])
   end
 end
 
