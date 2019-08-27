@@ -62,7 +62,7 @@ defmodule Chat.Server.Connection do
 
   defp handle_data(data) do
     case Jason.decode(data) do
-      {:ok, %{"kind" => "broadcast", "nickname" => _, "message" => _} = message}
+      {:ok, %{"kind" => "broadcast", "nickname" => _, "message" => _} = message} ->
         connections = Chat.Server.Data.get_all_connections()
         Enum.each(connections, &Chat.Server.Connection.send_to_client(&1, message))
 
