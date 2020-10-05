@@ -1,22 +1,22 @@
 defmodule Exercises.Basics do
   @doc """
-  Sums the value of all integer values in a list.
+  Gets the average of a list of numbers.
   """
-  def sum(_list) do
+  def average(_list) do
     raise "not implemented yet"
   end
 
   @doc """
-  Takes the first the `count` elements of a list and returns them.
-  """
-  def take(_list, _count) do
-    raise "not implemented yet"
-  end
+  Ensures that the given phone number starts with a `+`.
 
-  @doc """
-  Returns the minimum element of the list.
+  You can assume `phone_number` is a string with only number and an optional leading `+`.
+  Examples of inputs for this function can be:
+
+    * `+1 333 9944333` - should be left unchanged
+    * `13339944333` - should become `+13339944333`
+
   """
-  def min(_list) do
+  def ensure_leading_plus(phone_number) do
     raise "not implemented yet"
   end
 end

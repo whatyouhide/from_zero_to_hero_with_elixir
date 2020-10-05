@@ -3,28 +3,21 @@ defmodule Exercises.BasicsTest do
   alias Exercises.Basics
 
   @tag :skip
-  test "sum/1" do
-    assert Basics.sum([]) == 0
-    assert Basics.sum([5]) == 5
-    assert Basics.sum([5, 6, 7]) == 18
+  test "average/1" do
+    assert Basics.average([100]) == 100
+    assert Basics.average([0, 1000]) == 500
+    assert Basics.average([1, 1, 1, 1]) == 1
+    assert Basics.average([1, 3, 5, 7]) == 4.5
+
+    assert_raise RuntimeError, fn ->
+      Basics.average([])
+    end
   end
 
   @tag :skip
-  test "take/2" do
-    assert Basics.take([], 0) == []
-    assert Basics.take([], 2) == []
-    assert Basics.take([1, 2, 3], 0) == []
-    assert Basics.take([1, 2, 3], 2) == [1, 2]
-    assert Basics.take([1, 2, 3], 3) == [1, 2, 3]
-    assert Basics.take([1, 2, 3], 4) == [1, 2, 3]
-  end
-
-  @tag :skip
-  test "min/1" do
-    assert Basics.min([5]) == 5
-    assert Basics.min([1, 2, 3]) == 1
-    assert Basics.min([3, 2, 1]) == 1
-    assert Basics.min([2, 1, 3]) == 1
-    assert Basics.min([1, -1, 0]) == -1
+  test "ensure_leading_plus/1" do
+    assert Basics.ensure_leading_plus("13339944333") == "+13339944333"
+    assert Basics.ensure_leading_plus("+13339944333") == "+13339944333"
+    assert Basics.ensure_leading_plus("+1 333 994 4333") == "+1 333 994 4333"
   end
 end
