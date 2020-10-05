@@ -16,7 +16,7 @@ defmodule Exercises.Basics do
     * `13339944333` - should become `+13339944333`
 
   """
-  def ensure_leading_plus(phone_number) do
+  def ensure_leading_plus(_phone_number) do
     raise "not implemented yet"
   end
 end

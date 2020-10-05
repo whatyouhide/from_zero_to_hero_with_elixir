@@ -1,9 +1,16 @@
 defmodule Exercises.Advanced do
   @doc """
+  Sums the value of all integer values in a list.
+  """
+  def sum(_list) do
+    raise "not implemented yet"
+  end
+
+  @doc """
   Return the average value of all numbers in the list.
   """
   def average([head | tail]) do
-    do_average(tail, head, 1)
+    do_average(tail, head, _accumulator = 1)
   end
 
   defp do_average(_list, _sum, _count) do
@@ -33,7 +40,7 @@ defmodule Exercises.Advanced do
 
   TIP: Use the functions `String.split/2`, `String.capitalize/1`, and `Enum.join/1`.
   """
-  def capitalize_all(_string) do
+  def capitalize_words(_string) do
     raise "not implemented yet"
   end
 end

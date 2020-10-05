@@ -1,6 +1,15 @@
 defmodule Exercises.AdvancedTest do
   use ExUnit.Case
+
   alias Exercises.Advanced
+
+  @tag :skip
+  test "sum/1" do
+    assert Advanced.sum([]) == 0
+    assert Advanced.sum([8]) == 8
+    assert Advanced.sum([8, 12]) == 20
+    assert Advanced.sum([1, 2, 3, 4]) == 10
+  end
 
   @tag :skip
   test "average/1" do
@@ -26,10 +35,10 @@ defmodule Exercises.AdvancedTest do
   end
 
   @tag :skip
-  test "capitalize_all/1" do
-    assert Advanced.capitalize_all("") == ""
-    assert Advanced.capitalize_all("foo bar") == "Foo Bar"
-    assert Advanced.capitalize_all("FOO BAR") == "Foo Bar"
-    assert Advanced.capitalize_all("elixirconf EU  2019") == "Elixirconf Eu  2019"
+  test "capitalize_words/1" do
+    assert Advanced.capitalize_words("") == ""
+    assert Advanced.capitalize_words("foo bar") == "Foo Bar"
+    assert Advanced.capitalize_words("FOO BAR") == "Foo Bar"
+    assert Advanced.capitalize_words("elixirconf EU  2019") == "Elixirconf Eu  2019"
   end
 end

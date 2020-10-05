@@ -1,13 +1,24 @@
 defmodule Exercises.Advanced do
   @doc """
+  Sums the value of all integer values in a list.
+  """
+  def sum([]) do
+    0
+  end
+
+  def sum([head | tail]) do
+    head + sum(tail)
+  end
+
+  @doc """
   Return the average value of all numbers in the list.
   """
   def average([head | tail]) do
-    do_average(tail, head, 1)
+    do_average(tail, head, _accumulator = 1)
   end
 
   defp do_average([head | tail], sum, count) do
-    do_average(tail, head + sum, count + 1)
+    do_average(tail, head + sum, _accumulator = count + 1)
   end
 
   defp do_average([], sum, count) do
@@ -48,7 +59,7 @@ defmodule Exercises.Advanced do
 
   TIP: Use the functions `String.split/2`, `String.capitalize/1`, and `Enum.join/1`.
   """
-  def capitalize_all(string) do
+  def capitalize_words(string) do
     string
     |> String.split(" ")
     |> Enum.map(&String.capitalize/1)

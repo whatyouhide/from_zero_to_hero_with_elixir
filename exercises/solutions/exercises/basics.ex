@@ -1,40 +1,32 @@
 defmodule Exercises.Basics do
   @doc """
-  Sums the value of all integer values in a list.
+  Gets the average of a list of numbers.
   """
-  def sum([]) do
-    0
-  end
+  def average(list) do
+    length = length(list)
 
-  def sum([head | tail]) do
-    head + sum(tail)
-  end
-
-  @doc """
-  Takes the first the `count` elements of a list and returns them.
-  """
-  def take([head | tail], count) when count > 0 do
-    [head | take(tail, count - 1)]
-  end
-
-  def take(_list, _count) do
-    []
-  end
-
-  @doc """
-  Returns the minimum element of the list.
-  """
-  def min([head]) do
-    head
-  end
-
-  def min([head | tail]) do
-    min_tail = min(tail)
-
-    if head < min_tail do
-      head
+    if length == 0 do
+      raise "a non-empty list is required"
     else
-      min_tail
+      Enum.sum(list) / length
+    end
+  end
+
+  @doc """
+  Ensures that the given phone number starts with a `+`.
+
+  You can assume `phone_number` is a string with only number and an optional leading `+`.
+  Examples of inputs for this function can be:
+
+    * `+1 333 9944333` - should be left unchanged
+    * `13339944333` - should become `+13339944333`
+
+  """
+  def ensure_leading_plus(phone_number) do
+    if String.start_with?(phone_number, "+") do
+      phone_number
+    else
+      "+" <> phone_number
     end
   end
 end
